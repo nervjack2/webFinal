@@ -13,7 +13,7 @@ sudo python dataCenterNet.py [Number of core switches] [Number of aggregation sw
 ```
 mininet> xterm [Host name]
 ```
-4. In the host xterm terminal, enter the following command to launch DDOS attack.
+4. In the host xterm terminal, enter the following command to create tranffic in network.
 ```
 python3 flowGenerate.py --host_id [The xterm terminal host id] --n_host [Number of hosts in the topology.]
 ```
