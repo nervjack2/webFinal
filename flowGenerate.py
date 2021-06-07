@@ -34,7 +34,7 @@ def main(host_id, n_host):
     S_PORT = 2
     for i in range(NUM_PACKET):
         packets = Ether() / IP(dst=getRandomDstIP(host_id,n_host),src=getRandomSrcIP()) / UDP(dport=D_PORT, sport=S_PORT)     
-        sendp(packets, iface=interface.rstrip(), inter=0.1)
+        sendp(packets, iface=interface.rstrip(), inter=0.2)
         print(f'Send packet: {repr(packets)}')
 
 
