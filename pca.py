@@ -53,6 +53,8 @@ class PCA():
             proj = np.dot(self.data, eigenvectors[r])
             avg_proj = np.mean(proj)
             std_proj = np.std(proj)
+            print(proj)
+            print(avg_proj - 3*std_proj, avg_proj + 3*std_proj)
             for value in proj: 
                 if value < avg_proj - 3*std_proj or value > avg_proj + 3*std_proj:
                     return r 
@@ -81,8 +83,7 @@ class PCA():
         assert self.num_element == self.time_dim   
         x = self.data[self.time_dim-1,:]
         eigenvalues, eigenvectors = self.compute_eigen()
-        #r = self.compute_r(eigenvectors)
-        r = 2
+        r = self.compute_r(eigenvectors)
         P = eigenvectors[:r,:].T 
         x_normal = np.dot(np.dot(P,P.T),x)
         x_abnormal = np.dot(np.identity(P.shape[0])-np.dot(P,P.T),x)
