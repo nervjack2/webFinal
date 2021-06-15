@@ -22,7 +22,7 @@ class SimpleMonitor(SimpleSwitch):
         # Record number of total packets of previous timestep
         self.record = {}
 
-        # Record which switch we have met at each timestape
+        # Record which switch we have met at each timestep
         self.switch_set = set()
 
         # Record packet count of each (src_ip, dst_ip) pair
