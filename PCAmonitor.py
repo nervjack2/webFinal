@@ -25,19 +25,19 @@ class SimpleMonitor(SimpleSwitch):
         # Record which switch we have met at each timestep
         self.switch_set = set()
 
-        # Record packet count of each (src_ip, dst_ip) pair
-        self.od_flow = None      
-        self.flow_matrix = PCA(self.bins, self.num_host * (self.num_host-1))
-
-        # Which row of the flow matrix we are now recording
-        self.index = 0
-
         # Number of hosts in the topology
         self.num_host = 5
 
         # Parameters to try in PCA detection
         self.bins = 30 
         self.time_interval = 1
+        
+        # Record packet count of each (src_ip, dst_ip) pair
+        self.od_flow = None      
+        self.flow_matrix = PCA(self.bins, self.num_host * (self.num_host-1))
+
+        # Which row of the flow matrix we are now recording
+        self.index = 0
 
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
