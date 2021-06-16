@@ -11,6 +11,7 @@ from pca import PCA
 
 import json
 import numpy as np
+import sys
 
 class SimpleMonitor(SimpleSwitch):
     def __init__(self, *args, **kwargs):
@@ -22,22 +23,21 @@ class SimpleMonitor(SimpleSwitch):
         # Record number of total packets of previous timestep
         self.record = {}
 
-        # Record which switch we have met at each timestep
+        # Record which switch we have met at each timestape
         self.switch_set = set()
-
-        # Number of hosts in the topology
-        self.num_host = 5
 
         # Parameters to try in PCA detection
         self.bins = 30 
         self.time_interval = 1
+
+        # Number of hosts in the topology
+        # Modify the number according to the topology
+        self.num_host = 8
         
         # Record packet count of each (src_ip, dst_ip) pair
         self.od_flow = None      
-        self.flow_matrix = PCA(self.bins, self.num_host * (self.num_host-1))
-
-        # Which row of the flow matrix we are now recording
-        self.index = 0
+        self.flow_matrix = PCA(self.bins, self.num_host * (self.num_host-1))        
+        self.timestep = 0
 
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
@@ -80,16 +80,6 @@ class SimpleMonitor(SimpleSwitch):
                     odpair_dict[(src_ip, dst_ip)] = 0
         return odpair_dict
 
-    def _detect(self):        
-        ddos, _ = self.flow_matrix.detect_ddos()
-        if ddos:
-            print('ddos detected!')
-        else:
-            print('normal traffic')
-        
-        self.flow_matrix = PCA(self.bins, self.num_host * (self.num_host - 1)) 
-        self.index = 0
-
     def _make_row(self):
         count = 0
         odpair_to_index = {}        
@@ -106,20 +96,23 @@ class SimpleMonitor(SimpleSwitch):
                     
         # The real traffic should be the difference between
         # the current timestep and the previous timestep
-        for pair, value in self.od_flow.items():            
-            row[odpair_to_index[pair]] = value - self.record[pair]
+        for pair, value in self.od_flow.items():                        
+            row[odpair_to_index[pair]] = max(0, value - self.record[pair])
 
-        assert np.all(row >= 0)
+        # print('traffic at t = {:2} {}'.format(self.index+1, row))
 
-        print('traffic at t = {:2} {}'.format(self.index+1, row))
-
-        # Initialize variables at the end of each timestep
-        self.flow_matrix.init_data_matrix(row, self.index)        
-        self.index += 1
-        
-        if self.index == self.bins:
-            self._detect()
-
+        # update flow matrix and detect if ddos happens
+        if self.timestep < self.bins:
+            self.flow_matrix.init_data_matrix(row, self.timestep)        
+        else:
+            self.flow_matrix.update_data(row)
+            ddos, _ = self.flow_matrix.detect_ddos()
+            if ddos:
+                print('At t = {} ddos detected!'.format(self.timestep+1))
+            else:
+                print('At t = {} normal traffic'.format(self.timestep+1))
+                
+        self.timestep += 1
         self.record = self.od_flow
         self.od_flow = self._init_odpair()        
         self.switch_set = set()
@@ -134,7 +127,7 @@ class SimpleMonitor(SimpleSwitch):
             self.init = 1
 
         # If the switch appears again, the next timestep is about to begin
-        # Thus we need to record the traffic first
+        # Thus we need to record the traffic of the current step first
         _id = ev.msg.datapath.id            
         if _id in self.switch_set:            
             self._make_row()        
@@ -143,7 +136,7 @@ class SimpleMonitor(SimpleSwitch):
         '''
         # print monitor information
         # uncommnent if needed
-        if self.index == 0:
+        if self.timestep % self.bins == 0:
             self.logger.info('datapath'
                              '          in-port       src_ip'
                              '       dst_ip'
@@ -151,7 +144,7 @@ class SimpleMonitor(SimpleSwitch):
             self.logger.info('---------------- '
                              '-------- ------------ '
                              '------------'
-                             ' ------- ------- --------')        
+                             ' ------- ------- --------')                
         '''
 
         for e,stat in enumerate(body):
@@ -168,7 +161,7 @@ class SimpleMonitor(SimpleSwitch):
             '''
             # print monitor information
             # uncommnent if needed
-            if self.index == 0:
+            if self.timestep % self.bins == 0:
                 self.logger.info('%016x %8x '
                                  '%12s %12s '
                                  '%7s %7d %8d',
