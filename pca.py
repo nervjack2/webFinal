@@ -53,8 +53,6 @@ class PCA():
             proj = np.dot(self.data, eigenvectors[r])
             avg_proj = np.mean(proj)
             std_proj = np.std(proj)
-            print(proj)
-            print(avg_proj - 3*std_proj, avg_proj + 3*std_proj)
             for value in proj: 
                 if value < avg_proj - 3*std_proj or value > avg_proj + 3*std_proj:
                     return r 
@@ -68,7 +66,11 @@ class PCA():
     ):
         phi_1 = np.sum(eigenvalues)
         phi_2 = np.sum(eigenvalues**2)
-        phi_3 = np.sum(eigenvalues**3)
+        phi_3 = np.sum(eigenvalues**3)  
+        # When phi_1 = 0, it is obvious that phi_2, phi_3, and h_0(can be calculated by limit) are also 0
+        # The final equation when phi_1, phi_2, phi_3, and h_0 goes to 0 will be equal to 0, too. 
+        if phi_1 == 0:
+            return 0
         h_0 = 1 - (2*phi_1*phi_3)/(3*(phi_2**2))
         # Compute the 1− α percentile in a standard normal distribution.
         alpha = 0.005
@@ -84,6 +86,8 @@ class PCA():
         x = self.data[self.time_dim-1,:]
         eigenvalues, eigenvectors = self.compute_eigen()
         r = self.compute_r(eigenvectors)
+        if r == self.num_link:
+            return False, None
         P = eigenvectors[:r,:].T 
         x_normal = np.dot(np.dot(P,P.T),x)
         x_abnormal = np.dot(np.identity(P.shape[0])-np.dot(P,P.T),x)
@@ -94,11 +98,3 @@ class PCA():
         else:
             return True, x_abnormal
 
-
-# Example: time dimension = 10, links number = 3 
-pca_obj = PCA(10,3)
-x = [[1,2,3],[4,8,5],[3,12,9],[1,8,5],[5,14,2],[7,4,1],[9,8,9],[3,8,1],[11,5,6],[10,11,7]]
-for i in range(10):
-    pca_obj.init_data_matrix(x[i],i)
-ddos = pca_obj.detect_ddos()
-print(ddos)

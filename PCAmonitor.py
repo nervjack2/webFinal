@@ -32,13 +32,16 @@ class SimpleMonitor(SimpleSwitch):
 
         # Number of hosts in the topology
         # Modify the number according to the topology
-        self.num_host = 8
+        self.num_host = 50
         
         # Record packet count of each (src_ip, dst_ip) pair
         self.od_flow = None      
         self.flow_matrix = PCA(self.bins, self.num_host * (self.num_host-1))        
         self.timestep = 0
 
+        # Record the number of consequent ddos detection
+        # If the number is equal or larger than 3, than we can claim the ddos attack is happening
+        self.consequent_ddos = 0
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
@@ -108,8 +111,13 @@ class SimpleMonitor(SimpleSwitch):
             self.flow_matrix.update_data(row)
             ddos, _ = self.flow_matrix.detect_ddos()
             if ddos:
-                print('At t = {} ddos detected!'.format(self.timestep+1))
+                self.consequent_ddos += 1
+                if self.consequent_ddos >= 3:
+                    print('At t = {} ddos detected!'.format(self.timestep+1))
+                else:
+                    print('At t = {} abnormal traffic'.format(self.timestep+1))
             else:
+                self.consequent_ddos = 0
                 print('At t = {} normal traffic'.format(self.timestep+1))
                 
         self.timestep += 1

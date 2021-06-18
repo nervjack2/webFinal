@@ -5,9 +5,9 @@
 ```
 ryu-manager monitor.py
 ```
-2. Enter the following command to create a data-center like topology.
+2. Enter the following command to create a tree like topology.
 ```
-sudo python dataCenterNet.py [Number of core switches] [Number of aggregation switches]
+sudo python2 treeNet.py [Number of hosts]
 ```
 3. Open a xterm terminal of one of the host.
 ```
@@ -15,18 +15,17 @@ mininet> xterm [Host name]
 ```
 4. In the host xterm terminal, enter the following command to create tranffic in network.
 ```
-python3 flowGenerate.py --host_id [The xterm terminal host id] --n_host [Number of hosts in the topology.]
+python3 flowGenerate.py --xterm_host_ip [The xterm terminal host ip] --num_host [Number of hosts in the topology.]
 ```
-Note: If host name = 4001, then its host_id = 1. If host name = 4016, its host_id = 16.
- 
+
 ### Launch DDOS Attack 
 1. Enter the following command in terminal to activate the ryu-manager.
 ```
 ryu-manager monitor.py
 ```
-2. Enter the following command to create a data-center like topology.
+2. Enter the following command to create a tree like topology.
 ```
-sudo python dataCenterNet.py [Number of core switches] [Number of aggregation switches]
+sudo python2 treeNet.py [Number of hosts]
 ```
 3. Open a xterm terminal of one of the host.
 ```
@@ -34,5 +33,5 @@ mininet> xterm [Host name]
 ```
 4. In the host xterm terminal, enter the following command to launch DDOS attack.
 ```
-python3 launchAttack.py --dst_ip [The ip address of DDOS attack victim.]
+python3 launchAttack.py --xterm_host_ip [The xterm terminal host ip] --dst_ip [The DDOS victim ip] --num_host [Number of hosts in the topology] --num_atk_host [Number of attackers]
 ```
