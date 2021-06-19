@@ -2,7 +2,7 @@ from operator import attrgetter
 from switch import SimpleSwitch
 
 from ryu.controller import ofp_event
-from ryu.controller.handler import MAIN_DISPATCHER, DEAD_DISPATCHER
+from ryu.controller.handler import MAIN_DISPATCHER, DEAD_DISPATCHER,CONFIG_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 from ryu.lib import hub
 from ryu.lib.packet import in_proto
@@ -17,7 +17,7 @@ class SimpleMonitor(SimpleSwitch):
         self.datapaths = {}
         self.monitor_thread = hub.spawn(self._monitor)
         self.e_obj=Entropy()
-        self.ddos=false
+        self.ddos=False
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
     def _state_change_handler(self, ev):
@@ -114,7 +114,6 @@ class SimpleMonitor(SimpleSwitch):
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
         """
     def limit_connection(datapath, ofproto, ofparser):
-    """ Configure meter """
         if(self.ddos):
             self.logger.info('limit_connection')
             b1 = ofparser.OFPMeterBandDscpRemark(rate=10, prec_level=1)
@@ -130,5 +129,5 @@ class SimpleMonitor(SimpleSwitch):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
         ### add mitigation ###
-        this.limit_connection(datapath, ofproto, parser)
+        self.limit_connection(datapath, ofproto, parser)
         ###
