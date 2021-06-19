@@ -13,6 +13,9 @@ from ryu.lib.packet import icmp
 from ryu.lib.packet import tcp
 from ryu.lib.packet import udp
 
+import time
+import os
+from pca import PCA
 
 class SimpleSwitch(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -20,6 +23,9 @@ class SimpleSwitch(app_manager.RyuApp):
     def __init__(self, *args, **kwargs):
         super(SimpleSwitch, self).__init__(*args, **kwargs)
         self.mac_to_port = {}
+        self.pca = PCA()        
+        self.initialCount = 0
+        self.ddosStart = False
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
@@ -132,11 +138,40 @@ class SimpleSwitch(app_manager.RyuApp):
                 
                 # verify if we have a valid buffer_id, if yes avoid to send both
                 # flow_mod & packet_out
+                
                 if msg.buffer_id != ofproto.OFP_NO_BUFFER:
                     self.add_flow(datapath, 1, match, actions, msg.buffer_id)
                     return
                 else:
                     self.add_flow(datapath, 1, match, actions)
+
+                self.pca.updatePCA(srcip, dstip)
+                self.initialCount += 1
+
+                if self.initialCount > 5:
+                    print(self.pca.getYdist())
+                    if(-1 < self.pca.getYdist() < 1 and self.ddosStart == False):
+                        self.ddosStart=True
+                        self.ddosPCACount = 0
+                        self.startPCA = time.time()
+
+                    elif(-5 < self.pca.getYdist() < 5 and self.ddosStart == True):
+                        self.endPCA = time.time()
+                        self.ddosPCACount += 1
+
+                        print('start time:', self.startPCA)
+                        print('end time:', self.endPCA)
+                        print('ddos count:', self.ddosPCACount)
+                        
+                        if(self.ddosPCACount > 8 and (self.endPCA - self.startPCA) < 2): 
+                            print("\n____________________________________________________________________________________________")
+                            print("\n                                  DDOS DETECTED                                           \n")
+                            print("\n____________________________________________________________________________________________")
+                            os._exit(0)
+
+                    else:
+                        self.ddosStart = False
+                        self.ddosPCACount = 0
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
