@@ -17,6 +17,7 @@ class SimpleMonitor(SimpleSwitch):
         self.datapaths = {}
         self.monitor_thread = hub.spawn(self._monitor)
         self.e_obj=Entropy()
+        self.ddos=false
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
     def _state_change_handler(self, ev):
@@ -79,8 +80,8 @@ class SimpleMonitor(SimpleSwitch):
                 src_port = stat.match['udp_src']
                 dst_port = stat.match['udp_dst']
                 protocol = 'UDP'
-            x=self.e_obj.get_stat( stat.match['ipv4_src'], stat.match['ipv4_dst'],stat.packet_count)
-            if(x==False):
+            self.ddos=self.e_obj.get_stat( stat.match['ipv4_src'], stat.match['ipv4_dst'],stat.packet_count)
+            if(self.ddos==True):
                 self.logger.info('ddos detected!!!!')
             #self.logger.info('%12s %12s',stat.match['ipv4_src'],stat.match['ipv4_dst'])
             """
@@ -112,3 +113,22 @@ class SimpleMonitor(SimpleSwitch):
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
         """
+    def limit_connection(datapath, ofproto, ofparser):
+    """ Configure meter """
+        if(self.ddos):
+            self.logger.info('limit_connection')
+            b1 = ofparser.OFPMeterBandDscpRemark(rate=10, prec_level=1)
+            req = ofparser.OFPMeterMod(datapath, command=ofproto.OFPMC_ADD, flags=ofproto.OFPMF_PKTPS, meter_id=1, bands=[b1])
+            datapath.send_msg(req)
+
+    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+    def switch_features_handler(self, ev):
+        datapath = ev.msg.datapath
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        match = parser.OFPMatch()
+        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
+        self.add_flow(datapath, 0, match, actions)
+        ### add mitigation ###
+        this.limit_connection(datapath, ofproto, parser)
+        ###
