@@ -19,6 +19,7 @@ class PCA():
         self.ydist = 0
         
         self.src_ip_dict = {}
+        self.count = 0
 
     def ipToNum(self, ip):
         ipSplit = str(ip).split('.')
@@ -32,12 +33,19 @@ class PCA():
         self.ydist = dstIpNum-proj
 
     def updatePCA(self, srcIP, dstIP):
-        if str(srcIP) in self.src_ip_dict.keys():
-            srcIpNum = self.src_ip_dict[str(srcIP)]
-        else: 
-            self.src_ip_dict[str(srcIP)] = len(self.src_ip_dict)+1
-            srcIpNum = self.src_ip_dict[str(srcIP)] 
+        if srcIP in self.src_ip_dict:
+            srcIpNum = self.src_ip_dict[srcIP]
+        else:
+            srcIpNum = len(self.src_ip_dict) + 1
+            self.src_ip_dict[srcIpNum] = srcIpNum
+            
         dstIpNum = self.ipToNum(dstIP)
+
+        if len(self.src_ip_list) > 10:
+            self.src_ip_list = []
+            self.dst_ip_list = []
+            self.src_ip_dict = {}
+        
         self.src_ip_list.append(srcIpNum)
         self.dst_ip_list.append(dstIpNum)
         d = {'x': self.src_ip_list, 'y': self.dst_ip_list}
@@ -47,3 +55,18 @@ class PCA():
         self.slope = lm.params.x
 
         self.calYdist(srcIpNum, dstIpNum)
+        print('ydist:', self.ydist)
+        if abs(self.ydist) < 1e-10:
+            if self.count > 10:
+                print("\n___________________________________________________________________________________________")
+                print("\n                                  DDOS DETECTED                                          \n")
+                print("\n___________________________________________________________________________________________")
+                self.count = 0
+                self.src_ip_list = []
+                self.dst_ip_list = []
+                self.src_ip_dict = {}
+                                
+            else:
+                self.count += 1
+        else:
+            self.count = 0
