@@ -106,6 +106,7 @@ class SimpleMonitor(SimpleSwitch):
 
         # update flow matrix and detect if ddos happens
         if self.timestep < self.bins:
+            print('At t = {} Initailizing parameters'.format(self.timestep+1))
             self.flow_matrix.init_data_matrix(row, self.timestep)        
         else:
             self.flow_matrix.update_data(row)

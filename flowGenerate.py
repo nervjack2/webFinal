@@ -25,7 +25,11 @@ def main(xterm_host_ip, num_host):
     D_PORT = 80
     S_PORT = 2
     for i in range(NUM_PACKET):
-        packets = Ether() / IP(dst=getRandomIP(xterm_host_ip,num_host),src=getRandomIP(xterm_host_ip,num_host)) / UDP(dport=D_PORT, sport=S_PORT)     
+        dst_ip = getRandomIP(xterm_host_ip, num_host)
+        src_ip = getRandomIP(xterm_host_ip, num_host)
+        while src_ip == dst_ip:
+            src_ip = getRandomIP(xterm_host_ip, num_host)
+        packets = Ether() / IP(dst=dst_ip,src=src_ip) / UDP(dport=D_PORT, sport=S_PORT)     
         sendp(packets, iface=interface.rstrip(), inter=0.2)
         print(f'Send packet: {repr(packets)}')
 
