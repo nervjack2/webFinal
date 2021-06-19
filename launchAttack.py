@@ -8,11 +8,11 @@ from random import randint
 from argparse import ArgumentParser
 
 def getSrcRandomIP():
-    invalid_ip = [10, 127, 256, 1, 2, 169, 172, 192]
-    first_ip = randint(1, 256)
+    invalid_ip = [10, 127, 254 ,255, 1, 2, 169, 172, 192]
+    first_ip = randint(1, 255)
     while first_ip in invalid_ip:
-        first_ip = randint(1, 256) 
-    src_ip = '.'.join([str(first_ip), str(randint(1,256)), str(randint(1,256)), str(randint(1,256))])
+        first_ip = randint(1, 255) 
+    src_ip = '.'.join([str(first_ip), str(randint(1,255)), str(randint(1,255)), str(randint(1,255))])
     return src_ip
 
 def main(dst_ip):
