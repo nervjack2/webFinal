@@ -34,17 +34,16 @@ class PCA():
 
     def updatePCA(self, srcIP, dstIP):
         if srcIP in self.src_ip_dict:
-            srcIpNum = self.src_ip_dict[srcIP]
+            srcIpNum = self.src_ip_dict[str(srcIP)]
         else:
             srcIpNum = len(self.src_ip_dict) + 1
-            self.src_ip_dict[srcIpNum] = srcIpNum
+            self.src_ip_dict[str(srcIP)] = srcIpNum
             
         dstIpNum = self.ipToNum(dstIP)
 
         if len(self.src_ip_list) > 10:
-            self.src_ip_list = []
-            self.dst_ip_list = []
-            self.src_ip_dict = {}
+            self.src_ip_list = self.src_ip_list[1:]
+            self.dst_ip_list = self.dst_ip_list[1:]
         
         self.src_ip_list.append(srcIpNum)
         self.dst_ip_list.append(dstIpNum)
@@ -57,7 +56,7 @@ class PCA():
         self.calYdist(srcIpNum, dstIpNum)
         print('ydist:', self.ydist)
         if abs(self.ydist) < 1e-10:
-            if self.count > 10:
+            if self.count > 3:
                 print("\n___________________________________________________________________________________________")
                 print("\n                                  DDOS DETECTED                                          \n")
                 print("\n___________________________________________________________________________________________")
