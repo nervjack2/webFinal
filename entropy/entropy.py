@@ -1,7 +1,7 @@
 import math
 class Entropy():
 	def __init__(self,):
-		self.threshold=float(2.3)
+		self.threshold=float(2.2)
 		self.W=500
 		self.entropy_list=[]
 		self.init()
@@ -28,7 +28,6 @@ class Entropy():
 			self.init()
 			if(self.ddos>=5):
 				return True
-			
 		return False
 	def cal_entropy(self):
 		entropy=0
@@ -36,9 +35,8 @@ class Entropy():
 		#print("len=",l)
 		for i,n in self.pkt.items():
 			prob = n/float(l)
-			#print(i,n)
+			print(i,n)
 			entropy += (-prob* math.log(prob,10))
 		print("Entropy=",entropy)
 		self.entropy_list.append(entropy)
 		return entropy
-

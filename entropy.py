@@ -21,13 +21,13 @@ class Entropy():
 					self.pkt[ip]=0
 				self.pkt[ip] += 1
 			if(self.cal_entropy()>self.threshold):
-				print('entropy > threshold\n')
+				print('Entropy > Threshold\n')
 				self.ddos+=1
 			else: 	
 				self.ddos=max(0,self.ddos-1)
-			if(self.ddos>=3):
-				return True
 			self.init()
+			if(self.ddos>=3):
+				return True			
 		return False
 	def cal_entropy(self):
 		entropy=0
@@ -37,7 +37,7 @@ class Entropy():
 			prob = n/float(l)
 			#print(i,n)
 			entropy += (-prob* math.log(prob,10))
-		print("entropy=",entropy)
+		print("Entropy=",entropy)
 		self.entropy_list.append(entropy)
 		return entropy
 

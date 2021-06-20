@@ -62,7 +62,6 @@ class SimpleMonitor(SimpleSwitch):
                          ' ------- ------- --------')        
         """
         for stat in [flow for flow in body if flow.priority == 1]:
-
             out_port = stat.instructions[0].actions[0].port
             out_port = f'port {out_port}'
             
@@ -83,6 +82,7 @@ class SimpleMonitor(SimpleSwitch):
             self.ddos=self.e_obj.get_stat( stat.match['ipv4_src'], stat.match['ipv4_dst'],stat.packet_count)
             if(self.ddos==True):
                 self.logger.info('ddos detected!!!!')
+        
             #self.logger.info('%12s %12s',stat.match['ipv4_src'],stat.match['ipv4_dst'])
             """
             self.logger.info('%016x %8x '
@@ -113,13 +113,13 @@ class SimpleMonitor(SimpleSwitch):
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
         """
-    def limit_connection(datapath, ofproto, ofparser):
-        if(self.ddos):
-            self.logger.info('limit_connection')
-            b1 = ofparser.OFPMeterBandDscpRemark(rate=10, prec_level=1)
-            req = ofparser.OFPMeterMod(datapath, command=ofproto.OFPMC_ADD, flags=ofproto.OFPMF_PKTPS, meter_id=1, bands=[b1])
-            datapath.send_msg(req)
-
+    """
+    def limit_connection(self,datapath, ofproto, ofparser):
+        #self.logger.info('limit_connection')
+        b1 = ofparser.OFPMeterBandDscpRemark(rate=10, prec_level=1)
+        req = ofparser.OFPMeterMod(datapath, command=ofproto.OFPMC_ADD, flags=ofproto.OFPMF_PKTPS, meter_id=1, bands=[b1])
+        datapath.send_msg(req)
+    
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
@@ -131,3 +131,4 @@ class SimpleMonitor(SimpleSwitch):
         ### add mitigation ###
         self.limit_connection(datapath, ofproto, parser)
         ###
+    """

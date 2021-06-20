@@ -81,7 +81,7 @@ class SimpleMonitor(SimpleSwitch):
                 protocol = 'UDP'
             self.ddos=self.e_obj.get_stat( stat.match['ipv4_src'], stat.match['ipv4_dst'],stat.packet_count)
             if(self.ddos==True):
-                self.logger.info('ddos detected!!!!')
+                self.logger.info('Detect ddos attack !!!!!')
         
             #self.logger.info('%12s %12s',stat.match['ipv4_src'],stat.match['ipv4_dst'])
             """
