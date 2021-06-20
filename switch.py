@@ -13,6 +13,9 @@ from ryu.lib.packet import icmp
 from ryu.lib.packet import tcp
 from ryu.lib.packet import udp
 
+import time
+import os
+from pca import PCA
 
 class SimpleSwitch(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -20,6 +23,8 @@ class SimpleSwitch(app_manager.RyuApp):
     def __init__(self, *args, **kwargs):
         super(SimpleSwitch, self).__init__(*args, **kwargs)
         self.mac_to_port = {}
+        self.pca = PCA()        
+        self.count = 0        
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
@@ -132,11 +137,14 @@ class SimpleSwitch(app_manager.RyuApp):
                 
                 # verify if we have a valid buffer_id, if yes avoid to send both
                 # flow_mod & packet_out
+                
                 if msg.buffer_id != ofproto.OFP_NO_BUFFER:
                     self.add_flow(datapath, 1, match, actions, msg.buffer_id)
                     return
                 else:
                     self.add_flow(datapath, 1, match, actions)
+
+                self.pca.updatePCA(srcip, dstip)      
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:

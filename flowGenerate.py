@@ -8,14 +8,21 @@ from scapy.all import sendp, IP, UDP, Ether
 from random import randint
 from argparse import ArgumentParser
 
+invalid_ip = [10, 127, 254, 1, 2, 169, 172, 192]
 
-def getRandomIP(xterm_host_ip, num_host):
+def getDstRandomIP(xterm_host_ip, num_host):
     randnum = randint(1,num_host)
     while f'10.0.0.{randnum}' == xterm_host_ip:
         randnum = randint(1,num_host)
-    return f'10.0.0.{randnum}'
+    return '.'.join(['10','0','0',str(randnum)])
 
-    
+def getSrcRandomIP():
+    first_ip = randint(1, 255)
+    while first_ip in invalid_ip:
+        first_ip = randint(1, 255) 
+    src_ip = '.'.join([str(first_ip), str(randint(1,255)), str(randint(1,255)), str(randint(1,255))])
+    return src_ip
+
 def main(xterm_host_ip, num_host):
     if xterm_host_ip is  None or num_host is None:
         print('Type the following command to get some help.\npython3 flowGenerate.py -h')
@@ -25,10 +32,8 @@ def main(xterm_host_ip, num_host):
     D_PORT = 80
     S_PORT = 2
     for i in range(NUM_PACKET):
-        dst_ip = getRandomIP(xterm_host_ip, num_host)
-        src_ip = getRandomIP(xterm_host_ip, num_host)
-        while src_ip == dst_ip:
-            src_ip = getRandomIP(xterm_host_ip, num_host)
+        dst_ip = getDstRandomIP(xterm_host_ip, num_host)
+        src_ip = getSrcRandomIP()
         packets = Ether() / IP(dst=dst_ip,src=src_ip) / UDP(dport=D_PORT, sport=S_PORT)     
         sendp(packets, iface=interface.rstrip(), inter=0.2)
         print(f'Send packet: {repr(packets)}')

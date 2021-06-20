@@ -32,7 +32,7 @@ class SimpleMonitor(SimpleSwitch):
 
         # Number of hosts in the topology
         # Modify the number according to the topology
-        self.num_host = 50
+        self.num_host = 10
         
         # Record packet count of each (src_ip, dst_ip) pair
         self.od_flow = None      
@@ -101,7 +101,6 @@ class SimpleMonitor(SimpleSwitch):
         # the current timestep and the previous timestep
         for pair, value in self.od_flow.items():                        
             row[odpair_to_index[pair]] = max(0, value - self.record[pair])
-
         # print('traffic at t = {:2} {}'.format(self.index+1, row))
 
         # update flow matrix and detect if ddos happens
@@ -155,7 +154,6 @@ class SimpleMonitor(SimpleSwitch):
                              '------------'
                              ' ------- ------- --------')                
         '''
-
         for e,stat in enumerate(body):
             if stat.priority != 1:
                 continue
