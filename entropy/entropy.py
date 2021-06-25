@@ -35,7 +35,7 @@ class Entropy():
 		#print("len=",l)
 		for i,n in self.pkt.items():
 			prob = n/float(l)
-			print(i,n)
+			#print(i,n)
 			entropy += (-prob* math.log(prob,10))
 		print("Entropy=",entropy)
 		self.entropy_list.append(entropy)
